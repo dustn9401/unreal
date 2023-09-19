@@ -3,18 +3,11 @@
 
 #include "Person.h"
 
+#include "Card.h"
+
 UPerson::UPerson()
 {
 	Name = TEXT("홍길동");
 	Year = 1;
-}
-
-const FString& UPerson::GetName() const
-{
-	return Name;
-}
-
-void UPerson::SetName(const FString& InName)
-{
-	Name = InName;
+	Card = CreateDefaultSubobject<UCard>(TEXT("NAME_Card"));
 }

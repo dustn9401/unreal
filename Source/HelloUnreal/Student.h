@@ -19,7 +19,4 @@ public:
 	UStudent();
 
 	virtual void DoLesson() override;
-private:
-	UPROPERTY()
-	int32 Id;
 };

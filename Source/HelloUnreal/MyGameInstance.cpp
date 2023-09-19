@@ -2,6 +2,8 @@
 
 
 #include "MyGameInstance.h"
+
+#include "Card.h"
 #include "Teacher.h"
 #include "Student.h"
 #include "Staff.h"
@@ -59,11 +61,11 @@ void UMyGameInstance::Init()
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
 	
 	TArray<UPerson*> Persons = { NewObject<UStudent>(), NewObject<UTeacher>(), NewObject<UStaff>()};
+	int32 Idx = 0;
 	for(const auto Person : Persons)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Name=%s"), *Person->GetName());
-		ILessonInterface* LessonInterface = Cast<ILessonInterface>(Person);
-		if (LessonInterface)
+		UE_LOG(LogTemp, Log, TEXT("#%d, Name=%s"), Idx, *Person->GetName());
+		if (ILessonInterface* LessonInterface = Cast<ILessonInterface>(Person))
 		{
 			UE_LOG(LogTemp, Log, TEXT("%s is ILesson"), *Person->GetName());
 			LessonInterface->DoLesson();
@@ -72,6 +74,18 @@ void UMyGameInstance::Init()
 		{
 			UE_LOG(LogTemp, Log, TEXT("%s is NOT ILesson"), *Person->GetName());
 		}
+
+		const UCard* OwnCard = Person->GetCard();
+		check(OwnCard);
+
+		// Name 파라미터는 언리얼엔진 규약임. /Script는 언리얼 객체 위치(언리얼이 정한 값), 모듈이름(프로젝트명).타입
+		if (const UEnum* CardEnumType = FindObject<UEnum>(nullptr, TEXT("/Script/HelloUnreal.ECardType")))
+		{
+			FString CardEnumDisplayName = CardEnumType->GetDisplayNameTextByValue(static_cast<int64>(OwnCard->GetCardType())).ToString();
+			UE_LOG(LogTemp, Log, TEXT("CardType=%d, DisplayName=%s"), OwnCard->GetCardType(), *CardEnumDisplayName);
+		}
+
+		Idx++;
 	}
 	
 	UE_LOG(LogTemp, Log, TEXT("================================================="));
