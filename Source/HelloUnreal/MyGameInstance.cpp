@@ -4,6 +4,7 @@
 #include "MyGameInstance.h"
 #include "Teacher.h"
 #include "Student.h"
+#include "Staff.h"
 
 UMyGameInstance::UMyGameInstance()
 {
@@ -13,6 +14,7 @@ UMyGameInstance::UMyGameInstance()
 void UMyGameInstance::Init()
 {
 	Super::Init();
+
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
 
 	const UClass* ClassRuntime = GetClass();
@@ -47,7 +49,6 @@ void UMyGameInstance::Init()
 
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
 	
-	Student->DoLesson();
 
 	UFunction* DoLessonFunc = Teacher->GetClass()->FindFunctionByName(TEXT("DoLesson"));
 	if (DoLessonFunc)
@@ -56,4 +57,22 @@ void UMyGameInstance::Init()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
+	
+	TArray<UPerson*> Persons = { NewObject<UStudent>(), NewObject<UTeacher>(), NewObject<UStaff>()};
+	for(const auto Person : Persons)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Name=%s"), *Person->GetName());
+		ILessonInterface* LessonInterface = Cast<ILessonInterface>(Person);
+		if (LessonInterface)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s is ILesson"), *Person->GetName());
+			LessonInterface->DoLesson();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s is NOT ILesson"), *Person->GetName());
+		}
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("================================================="));
 }

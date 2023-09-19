@@ -9,11 +9,6 @@ UPerson::UPerson()
 	Year = 1;
 }
 
-void UPerson::DoLesson()
-{
-	UE_LOG(LogTemp, Log, TEXT("%s님이 수업 참여(%d)"), *Name, Year);
-}
-
 const FString& UPerson::GetName() const
 {
 	return Name;

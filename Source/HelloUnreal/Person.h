@@ -17,9 +17,6 @@ class HELLOUNREAL_API UPerson : public UObject
 public:
 	UPerson();
 	
-	UFUNCTION()
-	virtual void DoLesson();
-	
 	const FString& GetName() const;
 	void SetName(const FString& InName);
 	

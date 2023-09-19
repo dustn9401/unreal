@@ -11,6 +11,6 @@ UStudent::UStudent()
 
 void UStudent::DoLesson()
 {
-	Super::DoLesson();
+	ILessonInterface::DoLesson();
 	UE_LOG(LogTemp, Log, TEXT("%d학년 %s학생 출석"), Year, *Name);
 }
