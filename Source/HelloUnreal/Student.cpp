@@ -16,3 +16,8 @@ void UStudent::DoLesson()
 	ILessonInterface::DoLesson();
 	UE_LOG(LogTemp, Log, TEXT("%d학년 %s학생 출석"), Year, *Name);
 }
+
+void UStudent::GetNotification(const FString& School, const FString& NewCourseInfo) const
+{
+	UE_LOG(LogTemp, Log, TEXT("[Student] %s님이 %s로부터 받은 메시지: %s"), *Name, *School, *NewCourseInfo);
+}

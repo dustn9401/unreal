@@ -4,6 +4,7 @@
 #include "MyGameInstance.h"
 
 #include "Card.h"
+#include "CourseInfo.h"
 #include "Teacher.h"
 #include "Student.h"
 #include "Staff.h"
@@ -11,11 +12,30 @@
 UMyGameInstance::UMyGameInstance()
 {
 	SchoolName = TEXT("기본학교");
+	// CourseInfo = NewObject<UCourseInfo>();
 }
 
 void UMyGameInstance::Init()
 {
 	Super::Init();
+
+	// CourseInfo = NewObject<UCourseInfo>(this);
+	CourseInfo = NewObject<UCourseInfo>();	// CourseInfo를 멤버변수로 들고 있어도 Outer 지정이 필수는 아닌듯.
+
+	UE_LOG(LogTemp, Log, TEXT("===================================================="));
+
+	UStudent* Student1 = NewObject<UStudent>();
+	Student1->SetName(TEXT("학생1"));
+	UStudent* Student2 = NewObject<UStudent>();
+	Student2->SetName(TEXT("학생2"));
+	UStudent* Student3 = NewObject<UStudent>();
+	Student3->SetName(TEXT("학생3"));
+
+	CourseInfo->OnChanged.AddUObject(Student1, &UStudent::GetNotification);
+	CourseInfo->OnChanged.AddUObject(Student2, &UStudent::GetNotification);
+	CourseInfo->OnChanged.AddUObject(Student3, &UStudent::GetNotification);
+
+	CourseInfo->ChangeCourseInfo(SchoolName, TEXT("변경된 학사 정보"));
 
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
 

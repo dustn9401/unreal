@@ -21,5 +21,7 @@ public:
 private:
 	UPROPERTY()
 	FString SchoolName;
-	
+
+	UPROPERTY()
+	TObjectPtr<class UCourseInfo> CourseInfo;
 };
