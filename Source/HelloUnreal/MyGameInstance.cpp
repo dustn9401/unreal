@@ -28,6 +28,7 @@ TArray<T> Select(const TArray<K>& InArr, LambdaType Func)
 }
 
 // 문자열을 결합하는 함수
+// Elements 타입을 템플릿으로 하고 싶었는데, 공용 문자열 변환 함수가 없어서 실패
 FString Join(const TArray<FString>& Elements, const FString& Delimiter) {
 	FString Result;
 	bool IsFirst = true;
