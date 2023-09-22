@@ -15,9 +15,55 @@ UMyGameInstance::UMyGameInstance()
 	// CourseInfo = NewObject<UCourseInfo>();
 }
 
+template <typename T, typename K, typename LambdaType>
+TArray<T> Select(const TArray<K>& InArr, LambdaType Func)
+{
+	TArray<T> Ret;
+	for(auto Element : InArr)
+	{
+		Ret.Emplace(Func(Element));
+	}
+
+	return Ret;
+}
+
+// 문자열을 결합하는 함수
+FString Join(const TArray<FString>& Elements, const FString& Delimiter) {
+	FString Result;
+	bool IsFirst = true;
+    
+	for (const FString& Element : Elements) {
+		if (!IsFirst) Result += Delimiter;
+		Result += Element;
+		IsFirst = false;
+	}
+    
+	return Result;
+}
+
 void UMyGameInstance::Init()
 {
 	Super::Init();
+
+	const TArray<int32> Arr = {1,2,3,4,5};
+	
+	// C#의 Where
+	auto EvenNums = Arr.FilterByPredicate([](int32 Element) {return Element % 2 == 0;});
+
+	// C#의 Select에 해당하는 함수는 없다. 이런식으로 사용하는듯
+	TArray<int32> TwoPoweredNums;
+	for (const int32& Element : Arr)
+	{
+		TwoPoweredNums.Add(Element * Element);
+	}
+
+	// 직접만든 Select함수
+	auto TwoPoweredNumsStr = Select<FString>(TwoPoweredNums, [](int32 X)
+	{
+		return FString::Printf(TEXT("%d"), X);
+	});
+	
+	UE_LOG(LogTemp, Log, TEXT("TwoPoweredNums: %s"), *Join(TwoPoweredNumsStr, TEXT(", ")))
 
 	// CourseInfo = NewObject<UCourseInfo>(this);
 	CourseInfo = NewObject<UCourseInfo>();	// CourseInfo를 멤버변수로 들고 있어도 Outer 지정이 필수는 아닌듯.
