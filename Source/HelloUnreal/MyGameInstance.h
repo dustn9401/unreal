@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Student.h"
 #include "Engine/GameInstance.h"
 #include "MyGameInstance.generated.h"
 
@@ -24,4 +25,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UCourseInfo> CourseInfo;
+
+	TArray<FStudentData> StudentsData;
 };

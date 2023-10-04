@@ -9,6 +9,21 @@
 #include "Student.h"
 #include "Staff.h"
 
+FString GenerateRandomName()
+{
+	constexpr TCHAR FirstChar[] = TEXT("김이박최");
+	constexpr TCHAR MiddleChar[] = TEXT("상혜지성");
+	constexpr TCHAR LastChar[] = TEXT("수은원연");
+
+	TArray<TCHAR> Picked;
+	Picked.SetNum(3);
+	Picked[0] = FirstChar[FMath::RandRange(0, 3)];
+	Picked[1] = MiddleChar[FMath::RandRange(0, 3)];
+	Picked[2] = LastChar[FMath::RandRange(0, 3)];
+
+	return Picked.GetData();
+}
+
 UMyGameInstance::UMyGameInstance()
 {
 	SchoolName = TEXT("기본학교");
@@ -126,7 +141,8 @@ void UMyGameInstance::Init()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
-	
+
+	// 객체 생성해서 포인터로 들고 있지만, UObject 타입이기 떄문에 따로 메모리 해제를 하지 않아도 되는듯
 	TArray<UPerson*> Persons = { NewObject<UStudent>(), NewObject<UTeacher>(), NewObject<UStaff>()};
 	int32 Idx = 0;
 	for(const auto Person : Persons)
@@ -156,4 +172,47 @@ void UMyGameInstance::Init()
 	}
 	
 	UE_LOG(LogTemp, Log, TEXT("================================================="));
+
+	constexpr int32 StudentNum = 300;
+	for(int32 i =0;i<StudentNum;i++)
+	{
+		// StudentsData.Emplace(FStudentData(GenerateRandomName(), i + 1));
+		StudentsData.Emplace(GenerateRandomName(), i);	// 이렇게도 됨
+	}
+
+	// TArray<FString> StudentNamesArray = Select<FString>(StudentsData, [](const FStudentData& Data)
+	// {
+	// 	return Data.Name;
+	// });
+
+	TArray<FString> StudentNamesArray;
+	Algo::Transform(StudentsData, StudentNamesArray, [](const FStudentData& Data)
+	{
+		return Data.Name;
+	});
+
+	UE_LOG(LogTemp, Log, TEXT("NameArray Num: %d"), StudentNamesArray.Num());
+
+	TSet<FString> StudentNamesSet;
+	Algo::Transform(StudentsData, StudentNamesSet, [](const FStudentData& Data)
+	{
+		return Data.Name;
+	});
+
+	UE_LOG(LogTemp, Log, TEXT("NameSet Num: %d"), StudentNamesSet.Num());
+
+
+	TSet<FStudentData> StudentDataSet;
+	for(int32 i =0;i<StudentNum;i++)
+	{
+		StudentDataSet.Emplace(FStudentData(GenerateRandomName(), i + 1));
+	}
+
+	// Map, Multimap 사용법은 stl이랑 비슷함
+	// TMap<FString, int32> StudentMap;
+	// StudentMap.Find()
+	// TMultiMap<FString, int32> StudentMultiMap;
+	// StudentMultiMap.MultiFind()
 }
+
+
