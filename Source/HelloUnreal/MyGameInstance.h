@@ -18,6 +18,7 @@ class HELLOUNREAL_API UMyGameInstance : public UGameInstance
 public:
 	UMyGameInstance();
 	virtual void Init() override;
+	virtual void Shutdown() override;
 	
 private:
 	UPROPERTY()
@@ -27,4 +28,11 @@ private:
 	TObjectPtr<class UCourseInfo> CourseInfo;
 
 	TArray<FStudentData> StudentsData;
+
+	TObjectPtr<class UStudent> StudentNonProp;
+
+	UPROPERTY()
+	TObjectPtr<class UStudent> StudentProp;
+
+	class FStudentManager* StudentManager = nullptr;
 };

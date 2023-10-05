@@ -8,6 +8,7 @@
 #include "Teacher.h"
 #include "Student.h"
 #include "Staff.h"
+#include "StudentManager.h"
 
 FString GenerateRandomName()
 {
@@ -22,6 +23,30 @@ FString GenerateRandomName()
 	Picked[2] = LastChar[FMath::RandRange(0, 3)];
 
 	return Picked.GetData();
+}
+
+void CheckUObjectIsValid(const UObject* InObj, const FString& InTag)
+{
+	if (InObj->IsValidLowLevel())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] is Valid"), *InTag);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] is NOT Valid"), *InTag);
+	}
+}
+
+void CheckUObjectIsNull(const UObject* InObj, const FString& InTag)
+{
+	if (InObj == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] == nullptr"), *InTag);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] != nullptr"), *InTag);
+	}
 }
 
 UMyGameInstance::UMyGameInstance()
@@ -213,6 +238,34 @@ void UMyGameInstance::Init()
 	// StudentMap.Find()
 	// TMultiMap<FString, int32> StudentMultiMap;
 	// StudentMultiMap.MultiFind()
+
+	UE_LOG(LogTemp, Log, TEXT("================================================="));
+	
+	// UPROPERTY 언리얼 메모리관리
+	StudentNonProp = NewObject<UStudent>();
+	StudentProp = NewObject<UStudent>();
+
+	StudentManager = new FStudentManager(NewObject<UStudent>());
 }
 
+void UMyGameInstance::Shutdown()
+{
+	Super::Shutdown();
+
+	// 언리얼 오브젝트가 null은 아니지만 유효한 오브젝트가 아닌경우를 체크
+	// 유니티 오브젝트는 null비교를 override 하여 비싼 비용으로 체크를 해주긴 하는데, 느려서 잘 사용 안함. 그런데 언리얼은 아예 null비교를 사용하면 안된다.
+	CheckUObjectIsNull(StudentNonProp, TEXT("StudentNonProp"));
+	CheckUObjectIsValid(StudentNonProp, TEXT("StudentNonProp"));
+	CheckUObjectIsNull(StudentProp, TEXT("StudentProp"));
+	CheckUObjectIsValid(StudentProp, TEXT("StudentProp"));
+
+	// 언리얼오브젝트가 아닌 일반 c++클래스로 UObject를 관리하는 방법
+	const UStudent* Student = StudentManager->GetStudent();
+	
+	delete StudentManager;
+	StudentManager = nullptr;
+
+	CheckUObjectIsNull(Student, TEXT("StudentInManager"));
+	CheckUObjectIsValid(Student, TEXT("StudentInManager"));
+}
 
