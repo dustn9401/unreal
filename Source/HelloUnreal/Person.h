@@ -40,6 +40,8 @@ public:
 	{
 		this->Card = InCard;
 	}
+
+	virtual void Serialize(FArchive& Ar) override;
 	
 protected:
 	UPROPERTY()
@@ -48,6 +50,18 @@ protected:
 	UPROPERTY()
 	int32 Year;
 
+public:
+	[[nodiscard]] int32 GetYear() const
+	{
+		return Year;
+	}
+
+	void SetYear(int32 InYear)
+	{
+		this->Year = InYear;
+	}
+
+protected:
 	UPROPERTY()
 	// class UCard* Card;	// 옛날방식
 	TObjectPtr<class UCard> Card;	// 언리얼5 최신방식 ㅋ

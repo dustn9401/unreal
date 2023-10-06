@@ -10,6 +10,11 @@
 #include "Staff.h"
 #include "StudentManager.h"
 
+void PrintPersonInfo(const UPerson* InPerson, const FString& InTag)
+{
+	UE_LOG(LogTemp, Log, TEXT("[%s] Name: %s, Year: %d, CardType: %d"), *InTag, *InPerson->GetName(), InPerson->GetYear(), InPerson->GetCard()->GetCardType())
+}
+
 FString GenerateRandomName()
 {
 	constexpr TCHAR FirstChar[] = TEXT("김이박최");
@@ -157,10 +162,9 @@ void UMyGameInstance::Init()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("===================================================="));
-	
 
-	UFunction* DoLessonFunc = Teacher->GetClass()->FindFunctionByName(TEXT("DoLesson"));
-	if (DoLessonFunc)
+
+	if (UFunction* DoLessonFunc = Teacher->GetClass()->FindFunctionByName(TEXT("DoLesson")); DoLessonFunc != nullptr)
 	{
 		Teacher->ProcessEvent(DoLessonFunc, nullptr);
 	}
@@ -251,6 +255,7 @@ void UMyGameInstance::Init()
 	const FString SaveDir = FPaths::Combine(FPlatformMisc::ProjectDir(), TEXT("Saved"));
 	UE_LOG(LogTemp, Log, TEXT("Save Dir: %s"), *SaveDir);
 
+	// 일반 클래스 및 구조체: 쉬프트연산자 직접 구현해서 사용
 	{
 		const FString RawDataFileName(TEXT("RawData.bin"));
 		FString RawDataAbsPath = FPaths::Combine(*SaveDir, *RawDataFileName);
@@ -278,14 +283,45 @@ void UMyGameInstance::Init()
 			UE_LOG(LogTemp, Log, TEXT("Loaded Data: Name=%s, Order=%d"), *RawDataDest.Name, RawDataDest.Order);
 		}
 	}
-	
-	// UStudent* StudentSrc = NewObject<UStudent>();
+
+	// 언리얼 오브젝트는 Serialize 함수를 사용
+	// StudentSrc = NewObject<UStudent>();
 	// StudentSrc->SetName(TEXT("김연수"));
-	//
-	// {
-	// 	const FString ObjectDataFileName = TEXT("ObjectData.bin");
-	// 	FString ObjectDataAbsPath = FPaths::Combine()
-	// }
+
+	auto TeacherSrc = NewObject<UTeacher>();
+	TeacherSrc->SetName(TEXT("이득우"));
+	TeacherSrc->SetYear(32);
+	
+	{
+		const FString ObjectDataFileName = TEXT("ObjectData.bin");
+		FString ObjectDataAbsPath = FPaths::Combine(*SaveDir, *ObjectDataFileName);
+		FPaths::MakeStandardFilename(ObjectDataAbsPath);
+
+		TArray<uint8> BufferArray;
+		FMemoryWriter MemoryWriter(BufferArray);
+		TeacherSrc->Serialize(MemoryWriter);
+
+		// 스마트 포인터, 중괄호가 끝날 때 메모리 해제해줌 (c# using구문)
+		if (TUniquePtr<FArchive> FileWriterAr = TUniquePtr<FArchive>(IFileManager::Get().CreateFileWriter(*ObjectDataAbsPath)))
+		{
+			*FileWriterAr << BufferArray;
+			FileWriterAr->Close();
+		}
+
+		TArray<uint8> BufferArrayFromFile;
+		if (TUniquePtr<FArchive> FileReaderAr = TUniquePtr<FArchive>(IFileManager::Get().CreateFileReader(*ObjectDataAbsPath)))
+		{
+			*FileReaderAr << BufferArrayFromFile;
+			FileReaderAr->Close();
+		}
+
+		FMemoryReader MemoryReader(BufferArrayFromFile);
+		UStudent* StudentDest = NewObject<UStudent>();
+		StudentDest->Serialize(MemoryReader);
+		PrintPersonInfo(StudentDest, TEXT("ObjectData"));
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("================================================="));
 }
 
 void UMyGameInstance::Shutdown()

@@ -9,6 +9,6 @@ UCard::UCard(): CardType(ECardType::Invalid), Id(0)
 
 void UCard::Serialize(FArchive& Ar)
 {
-	UObject::Serialize(Ar);
+	// Super::Serialize(Ar);
 	Ar << CardType;
 }

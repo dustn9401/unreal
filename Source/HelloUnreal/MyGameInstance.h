@@ -42,4 +42,7 @@ private:
 
 
 	class FStudentManager* StudentManager = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UStudent> StudentSrc;
 };
