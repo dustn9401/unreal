@@ -11,6 +11,13 @@
 USTRUCT()
 struct FStudentData
 {
+	friend FArchive& operator<<(FArchive& Ar, FStudentData& OBJ)
+	{
+		return Ar
+		<< OBJ.Name
+		<< OBJ.Order;
+	}
+
 	friend bool operator==(const FStudentData& Lhs, const FStudentData& RHS)
 	{
 		return Lhs.Name == RHS.Name
@@ -59,4 +66,6 @@ public:
 	virtual void DoLesson() override;
 
 	void GetNotification(const FString& School, const FString& NewCourseInfo) const;
+
+	virtual void Serialize(FArchive& Ar) override;
 };

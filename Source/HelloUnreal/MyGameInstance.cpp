@@ -246,6 +246,46 @@ void UMyGameInstance::Init()
 	StudentProp = NewObject<UStudent>();
 
 	StudentManager = new FStudentManager(NewObject<UStudent>());
+
+	// 직렬화/역직렬화, 파일 입출력, 스트림
+	const FString SaveDir = FPaths::Combine(FPlatformMisc::ProjectDir(), TEXT("Saved"));
+	UE_LOG(LogTemp, Log, TEXT("Save Dir: %s"), *SaveDir);
+
+	{
+		const FString RawDataFileName(TEXT("RawData.bin"));
+		FString RawDataAbsPath = FPaths::Combine(*SaveDir, *RawDataFileName);
+		UE_LOG(LogTemp, Log, TEXT("Save Path: %s"), *RawDataAbsPath);
+		FPaths::MakeStandardFilename(RawDataAbsPath);
+		UE_LOG(LogTemp, Log, TEXT("Save Path MakeStandardFilename: %s"), *RawDataAbsPath);
+		
+		FStudentData RawDataSrc(TEXT("김연수"), 16);	// 저장할 데이터
+		if (FArchive* RawFileWriterAr = IFileManager::Get().CreateFileWriter(*RawDataAbsPath); RawFileWriterAr != nullptr)
+		{
+			*RawFileWriterAr << RawDataSrc;
+			RawFileWriterAr->Close();
+			delete RawFileWriterAr;
+			RawFileWriterAr = nullptr;
+		}
+
+		FStudentData RawDataDest;
+		if (FArchive* RawFileReaderAr = IFileManager::Get().CreateFileReader(*RawDataAbsPath); RawFileReaderAr != nullptr)
+		{
+			*RawFileReaderAr << RawDataDest;
+			RawFileReaderAr->Close();
+			delete RawFileReaderAr;
+			RawFileReaderAr = nullptr;
+
+			UE_LOG(LogTemp, Log, TEXT("Loaded Data: Name=%s, Order=%d"), *RawDataDest.Name, RawDataDest.Order);
+		}
+	}
+	
+	// UStudent* StudentSrc = NewObject<UStudent>();
+	// StudentSrc->SetName(TEXT("김연수"));
+	//
+	// {
+	// 	const FString ObjectDataFileName = TEXT("ObjectData.bin");
+	// 	FString ObjectDataAbsPath = FPaths::Combine()
+	// }
 }
 
 void UMyGameInstance::Shutdown()

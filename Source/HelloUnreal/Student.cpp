@@ -21,3 +21,10 @@ void UStudent::GetNotification(const FString& School, const FString& NewCourseIn
 {
 	UE_LOG(LogTemp, Log, TEXT("[Student] %s님이 %s로부터 받은 메시지: %s"), *Name, *School, *NewCourseInfo);
 }
+
+void UStudent::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	Ar << Name;
+	Ar << Card;
+}

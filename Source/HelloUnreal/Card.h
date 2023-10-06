@@ -41,6 +41,8 @@ public:
 		this->CardType = InCardType;
 	}
 
+	virtual void Serialize(FArchive& Ar) override;
+
 private:
 	UPROPERTY()
 	int32 Id;
