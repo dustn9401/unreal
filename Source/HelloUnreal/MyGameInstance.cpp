@@ -5,6 +5,7 @@
 
 #include "Card.h"
 #include "CourseInfo.h"
+#include "JsonObjectConverter.h"
 #include "Teacher.h"
 #include "Student.h"
 #include "Staff.h"
@@ -285,8 +286,8 @@ void UMyGameInstance::Init()
 	}
 
 	// 언리얼 오브젝트는 Serialize 함수를 사용
-	// StudentSrc = NewObject<UStudent>();
-	// StudentSrc->SetName(TEXT("김연수"));
+	StudentSrc = NewObject<UStudent>();
+	StudentSrc->SetName(TEXT("김연수"));
 
 	auto TeacherSrc = NewObject<UTeacher>();
 	TeacherSrc->SetName(TEXT("이득우"));
@@ -322,6 +323,41 @@ void UMyGameInstance::Init()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("================================================="));
+
+	// Json 및 스마트 포인터
+
+	{
+		const FString ObjectDataFileName = TEXT("ObjectDataJson.json");
+		FString ObjectDataAbsPath = FPaths::Combine(*SaveDir, *ObjectDataFileName);
+		FPaths::MakeStandardFilename(ObjectDataAbsPath);
+
+		TSharedRef<FJsonObject> JsonObjectSrc = MakeShared<FJsonObject>();
+		FJsonObjectConverter::UStructToJsonObject(TeacherSrc->GetClass(), TeacherSrc, JsonObjectSrc);
+
+		//write
+		FString JsonOutString;
+		if (TSharedRef<TJsonWriter<TCHAR>> JsonWriterAr = TJsonWriterFactory<TCHAR>::Create(&JsonOutString);
+			FJsonSerializer::Serialize(JsonObjectSrc, JsonWriterAr))
+		{
+			FFileHelper::SaveStringToFile(JsonOutString, *ObjectDataAbsPath);	
+		}
+
+		// read
+		FString JsonInString;
+		FFileHelper::LoadFileToString(JsonInString, *ObjectDataAbsPath);
+
+		TSharedRef<TJsonReader<TCHAR>> JsonReaderAr = TJsonReaderFactory<TCHAR>::Create(JsonInString);
+
+		if (TSharedPtr<FJsonObject> JsonObjectDest;
+			FJsonSerializer::Deserialize(JsonReaderAr, JsonObjectDest))
+		{
+			if (UTeacher* JsonStudentDest = NewObject<UTeacher>();
+				FJsonObjectConverter::JsonObjectToUStruct(JsonObjectDest.ToSharedRef(), JsonStudentDest->GetClass(), JsonStudentDest))
+			{
+				PrintPersonInfo(JsonStudentDest, TEXT("JsonData"));
+			}
+		}
+	}
 }
 
 void UMyGameInstance::Shutdown()
