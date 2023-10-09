@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Person.h"
 #include "Student.generated.h"
 
 /**
- * 
+ * s
  */
 UCLASS()
-class UNREALBUILDSYSTEM_API UStudent : public UObject
+class UNREALBUILDSYSTEM_API UStudent : public UPerson
 {
 	GENERATED_BODY()
 	
