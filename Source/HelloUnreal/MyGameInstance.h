@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Student.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StreamableManager.h"
 #include "MyGameInstance.generated.h"
 
 /**
@@ -19,6 +20,12 @@ public:
 	UMyGameInstance();
 	virtual void Init() override;
 	virtual void Shutdown() override;
+	static void SaveStudentPackage();
+	static void LoadStudentPackage();
+	static void LoadStudentObject();
+
+	static const FString PackageName;
+	static const FString AssetName;
 	
 private:
 	UPROPERTY()
@@ -42,7 +49,11 @@ private:
 
 
 	class FStudentManager* StudentManager = nullptr;
-
+	
 	UPROPERTY()
 	TObjectPtr<UStudent> StudentSrc;
+
+	// 에셋 비동기 로드 관련
+	FStreamableManager StreamableManager;
+	TSharedPtr<FStreamableHandle> Handle;
 };

@@ -10,6 +10,10 @@
 #include "Student.h"
 #include "Staff.h"
 #include "StudentManager.h"
+#include "UObject/SavePackage.h"
+
+const FString UMyGameInstance::PackageName = TEXT("/Game/School/StudentPackage");	//패키지의 이름
+const FString UMyGameInstance::AssetName = TEXT("TopStudent");	// 패키지가 관리할 메인 에셋 이름
 
 void PrintPersonInfo(const UPerson* InPerson, const FString& InTag)
 {
@@ -59,6 +63,19 @@ UMyGameInstance::UMyGameInstance()
 {
 	SchoolName = TEXT("기본학교");
 	// CourseInfo = NewObject<UCourseInfo>();
+	
+	const FString TopSoftObjectPath = FString::Printf(TEXT("%s.%s"), *PackageName, *AssetName);
+
+	// 생성자에서 에셋 로드할때는 LoadObject를 사용하면 안되고, 아래와 같이 사용
+	static ConstructorHelpers::FObjectFinder<UStudent> UASSET_TopStudent(*TopSoftObjectPath);
+	if (UASSET_TopStudent.Succeeded())
+	{
+		PrintPersonInfo(UASSET_TopStudent.Object, TEXT("Constructor"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Constructor load failed!!"));
+	}
 }
 
 template <typename T, typename K, typename LambdaType>
@@ -358,6 +375,31 @@ void UMyGameInstance::Init()
 			}
 		}
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("================================================="));
+
+	// 언리얼 오브젝트 패키지
+	SaveStudentPackage();
+	// LoadStudentPackage();
+	// LoadStudentObject();
+
+	// 에셋 비동기 로드
+	const FString TopSoftObjectPath = FString::Printf(TEXT("%s.%s"), *PackageName, *AssetName);
+	Handle = StreamableManager.RequestAsyncLoad(TopSoftObjectPath,
+		[&]()
+		{
+			if (Handle.IsValid() && Handle->HasLoadCompleted())
+			{
+				if (const UStudent* TopStudent = Cast<UStudent>(Handle->GetLoadedAsset()); TopStudent != nullptr)
+				{
+					PrintPersonInfo(TopStudent, TEXT("LoadAsync"));
+
+					// 패시브
+					Handle->ReleaseHandle();
+					Handle.Reset();
+				}
+			}
+		});
 }
 
 void UMyGameInstance::Shutdown()
@@ -379,5 +421,74 @@ void UMyGameInstance::Shutdown()
 
 	CheckUObjectIsNull(Student, TEXT("StudentInManager"));
 	CheckUObjectIsValid(Student, TEXT("StudentInManager"));
+}
+
+void UMyGameInstance::SaveStudentPackage()
+{
+	UPackage* StudentPackage = ::LoadPackage(nullptr, *PackageName, LOAD_None);
+	// 패키지가 이미 존재하는지 체크하고, 아래와 같이 함수 호출해줘야함. 안하면 팅김 
+	if (StudentPackage)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Student package already exists!!"));
+		StudentPackage->FullyLoad();	
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Student package not exists. Create new one"));
+		StudentPackage = CreatePackage(*PackageName);	// 이 코드가 else문 바깥에 있어도 동작 하는데, 차이가 없는지 확인해보기
+	}
+	
+	EObjectFlags Flags = RF_Public | RF_Standalone;
+
+	UStudent* TopStudent = NewObject<UStudent>(StudentPackage, UStudent::StaticClass(), *AssetName, Flags);
+	TopStudent->SetName(TEXT("김연수"));
+	TopStudent->SetYear(36);
+
+	const int32 N = 10;
+	for(int32 i=0;i<N;i++)
+	{
+		FString SubObjectName = FString::Printf(TEXT("Student%d"), i);
+		UStudent* SubStudent = NewObject<UStudent>(TopStudent, UStudent::StaticClass(), *SubObjectName, Flags);
+		SubStudent->SetName(FString::Printf(TEXT("학생 %d"), i + 1));
+		SubStudent->SetYear(i + 1);		
+	}
+
+	const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+	UE_LOG(LogTemp, Log, TEXT("PackageFileName: %s"), *PackageFileName);
+	FSavePackageArgs SaveArgs;
+	SaveArgs.TopLevelFlags = Flags;
+
+	if (UPackage::SavePackage(StudentPackage, nullptr, *PackageFileName, SaveArgs))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Package Saved."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Package save FAILED!!"));
+	}
+}
+
+void UMyGameInstance::LoadStudentPackage()
+{
+	UPackage* StudentPackage = ::LoadPackage(nullptr, *PackageName, LOAD_None);
+	// 패키지가 이미 존재하는지 체크하고, 아래와 같이 함수 호출해줘야함. 안하면 팅김 
+	if (StudentPackage == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Student package does not exists"));
+		return;
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Student package found"));
+	StudentPackage->FullyLoad();
+
+	UStudent* TopStudent = FindObject<UStudent>(StudentPackage, *AssetName);
+	PrintPersonInfo(TopStudent, TEXT("FindObject"));
+}
+
+void UMyGameInstance::LoadStudentObject()
+{
+	const FString TopSoftObjectPath = FString::Printf(TEXT("%s.%s"), *PackageName, *AssetName);
+	UStudent* TopStudent = LoadObject<UStudent>(nullptr, *TopSoftObjectPath);	//패키지를 로드하지 않기 떄문에, 첫번째 파라미터는 널
+	PrintPersonInfo(TopStudent, TEXT("LoadObject"));
 }
 
